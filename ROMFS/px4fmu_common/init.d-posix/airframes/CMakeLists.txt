@@ -107,5 +107,7 @@ px4_add_romfs_files(
 	17001_flightgear_tf-g1
 	17002_flightgear_tf-g2
 
+	21500_gazebo-classic_SAT_QUADX
+
 	# [22000, 22999] Reserve for custom models
 )
