@@ -15,6 +15,11 @@ public:
 				    bool update_normalization_scale) override;
 
 	virtual const char * name() const { return "TM"; }
+
+
+	matrix::Vector<float, NUM_AXES> getAllocatedControl() const
+	{ return (_effectiveness * (_allocated_actuators)).emult(_control_allocation_scale); }
+
 protected:
 
 	bool _mix_update_needed{false};
@@ -34,6 +39,7 @@ private:
 	void normalizeControlAllocationMatrix();
 	void updateControlAllocationMatrixScale();
 	bool _normalization_needs_update{false};
+	bool _is_normalized{true};
 
 	static const uint _servo_count{4};
 	static const uint _motor_count{4};
@@ -44,6 +50,10 @@ private:
 	float _mec_max[_servo_count];
 	float _trim[_servo_count];
 	float _tilt_cuttoff{0.0f};
+
+	// we need a seperate vector from _actuator_sp to store the actuator setpoints in a way
+	// that can be multiplied with the effectiveness matrix
+	matrix::Vector<float, NUM_ACTUATORS> _allocated_actuators{};
 };
 
 ////    END OF CUSTOM CODE    ////
