@@ -105,6 +105,7 @@ if(gazebo_FOUND)
 		uuv_bluerov2_heavy
 		uuv_hippocampus
 		SAT_QUADX
+		TV_QUADX
 	)
 
 	set(worlds

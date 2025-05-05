@@ -9,7 +9,7 @@ void ActuatorEffectivenessTM::getParam(const char * name, float * value)
 
 	if(param == PARAM_INVALID)
 	{
-		PX4_ERR("Parameter %s not found", name);
+		PX4_ERR("Parameter %s not found AETMcpp", name);
 		return;
 	}
 

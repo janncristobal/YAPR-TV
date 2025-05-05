@@ -121,7 +121,7 @@ void SimulatorMavlink::actuator_controls_from_outputs(mavlink_hil_actuator_contr
 
 	bool armed = (_vehicle_status.arming_state == vehicle_status_s::ARMING_STATE_ARMED);
 
-	if (armed) {
+	if (true) { // changed from armed to true by AVL-JC
 		for (unsigned i = 0; i < actuator_outputs_s::NUM_ACTUATOR_OUTPUTS; i++) {
 			msg->controls[i] = _actuator_outputs.output[i];
 		}

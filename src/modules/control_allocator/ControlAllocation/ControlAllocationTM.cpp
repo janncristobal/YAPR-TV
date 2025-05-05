@@ -66,7 +66,7 @@ ControlAllocationTM::getParam(const char * name, float * value)
 
 	if(param == PARAM_INVALID)
 	{
-		PX4_ERR("Parameter %s not found", name);
+		PX4_ERR("Parameter %s not found CATMcpp", name);
 		return;
 	}
 
@@ -98,7 +98,7 @@ ControlAllocationTM::updatePseudoInverse()
 void
 ControlAllocationTM::updateControlAllocationMatrixScale()
 {
-	PX4_INFO(" ---------------------- updateControlAllocationMatrixScale --------------------------");
+	PX4_INFO(" -------No-------------- updateControlAllocationMatrixScale --------------------------");
 
 	// MOMENTS STUFF
 	if (_normalize_rpy)
@@ -230,14 +230,16 @@ ControlAllocationTM::allocate()
 	matrix::Vector<float, NUM_ACTUATORS> motor_sp;
 	matrix::Vector<float, NUM_ACTUATORS> servo_sp;
 
-	for (size_t i = 0; i < _servo_count; i++)
+	// for (size_t i = 0; i < _servo_count; i++)
+	for (size_t i = 0; i < _motor_count; i++)
 	{
 		// set axis index
 		int idx = i * 3;
 
 		// find magnitude of the motor thrust vector
-		float act = sqrtf(_actuator_sp(idx + 1) * _actuator_sp(idx + 1) + _actuator_sp(idx + 2) * _actuator_sp(idx + 2));
-		motor_sp(i) =  math::constrain(act, 0.0f, 1.0f);
+		// float act = sqrtf(_actuator_sp(idx + 1) * _actuator_sp(idx + 1) + _actuator_sp(idx + 2) * _actuator_sp(idx + 2));
+		float act = sqrtf(_actuator_sp(idx) * _actuator_sp(idx) + _actuator_sp(idx + 1) * _actuator_sp(idx + 1) + _actuator_sp(idx + 2) * _actuator_sp(idx + 2));
+		motor_sp(i) =  math::constrain(act, 0.0f, 1.0f); //change 0.2 to 1.0 to stop the drone from taking off
 
 		if(!_is_normalized)
 		{
@@ -245,26 +247,38 @@ ControlAllocationTM::allocate()
 		}
 
 		// find the angle of the servo if the motor is above the cuttoff
-		float deg = 0;
+		// float deg = 0; 
+		float beta = 0; //AVL-JC Tilting Anlge about the Longitudinal Axis
+		float eta = 0; //AVL-JC Tilting Angle about the Lateral Axis
 		if (motor_sp(i) > _tilt_cuttoff)
 		{
-			deg = -atan2f(_actuator_sp(idx+1), _actuator_sp(idx + 2)) * 57.29578f;
+			// deg = -atan2f(_actuator_sp(idx+1), _actuator_sp(idx + 2)) * 57.29578f;
+			beta = atan2f(_actuator_sp(idx+1), _actuator_sp(idx + 2)) * 57.29578f;
+			eta = asinf(_actuator_sp(idx) / act) * 57.29578f;
 		}
 
 		// set the servo angle to the mechanical min max range
-		deg = math::constrain(deg + _trim[i], _mec_min[i], _mec_max[i]);
-
+		// deg = math::constrain(deg + _trim[i], _mec_min[i], _mec_max[i]);
+		beta = math::constrain(beta + _trim[i], _mec_min[i], _mec_max[i]);
+		eta = math::constrain(eta + _trim[i+4], _mec_min[i+4], _mec_max[i+4]);
+		
 		// set the servo angle to the pwm range
-		servo_sp(i) = deg2pwm(deg, i);
+		// servo_sp(i) = deg2pwm(deg, i);
+		servo_sp(i) = deg2pwm(beta, i);
+		servo_sp(i+4) = deg2pwm(eta, i+4);
 
-		_allocated_actuators(idx)   = 0.0f;
-		_allocated_actuators(idx+1) = std::sin(deg / 57.2957f) * -motor_sp(i);
-		_allocated_actuators(idx+2) = std::cos(deg / 57.2957f) *  motor_sp(i);
+		// _allocated_actuators(idx)   = 0.0f;
+		// _allocated_actuators(idx+1) = std::sin(deg / 57.2957f) * -motor_sp(i);
+		// _allocated_actuators(idx+2) = std::cos(deg / 57.2957f) *  motor_sp(i);
+		_allocated_actuators(idx)   = std::sin(eta / 57.2957f) * motor_sp(i);
+		_allocated_actuators(idx+1) = std::cos(eta / 57.2957f) * std::sin(beta / 57.2957f) * -motor_sp(i);
+		_allocated_actuators(idx+2) = std::cos(eta / 57.2957f) * std::cos(beta / 57.2957f) * -motor_sp(i);
 	}
 
 	for (size_t i = 0; i < _motor_count; i++)
 	{
-		_actuator_sp(i) = motor_sp(i);
-		_actuator_sp(i + _servo_count) = servo_sp(i);
+		_actuator_sp(i) = motor_sp(i); //omega
+		_actuator_sp(i + 4) = servo_sp(i); //beta
+		_actuator_sp(i + 8) = servo_sp(i+4); //eta
 	}
 }

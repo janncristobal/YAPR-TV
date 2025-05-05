@@ -35,15 +35,15 @@ public:
 	} TiltAxis;
 
 private:
-	static constexpr int NUM_ACTUATORS_MAX = 4;
+	static constexpr int NUM_ACTUATORS_MAX = 12;
 
 	void getParam(const char * name, float * value);
 	// matrix::Vector3f arbit_rot(matrix::Vector3f a, matrix::Vector3f P, float theta);
 
-	static const uint8_t SERVO_COUNT = 4;
+	static const uint8_t SERVO_COUNT = 8;
 	static const uint8_t MOTOR_COUNT = 4;
 
-	TiltAxis _tilt_axis{SINGLE_LATERAL};
+	TiltAxis _tilt_axis{DUAL};
 
 	float position_x[MOTOR_COUNT];
 	float position_y[MOTOR_COUNT];

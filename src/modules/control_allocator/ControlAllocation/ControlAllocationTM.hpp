@@ -34,14 +34,16 @@ private:
 	float eps = 1e-5f;
 
 	void getParam(const char * name, float * value);
-	float deg2pwm(float deg, int servo_num);
+	float deg2pwm(float deg, int servo_num); 
+	// float deg2pwm(float beta, int servo_num);
+	// float deg2pwm(float eta, int servo_num);
 
 	void normalizeControlAllocationMatrix();
 	void updateControlAllocationMatrixScale();
 	bool _normalization_needs_update{false};
 	bool _is_normalized{true};
 
-	static const uint _servo_count{4};
+	static const uint _servo_count{8}; //AVL-JC changed from 4 to 8
 	static const uint _motor_count{4};
 
 	float _min[_servo_count];

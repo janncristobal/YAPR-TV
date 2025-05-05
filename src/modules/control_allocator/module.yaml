@@ -1,6 +1,6 @@
 __max_num_mc_motors: &max_num_mc_motors 12
-__max_num_servos: &max_num_servos 8
-__max_num_tilts: &max_num_tilts 4
+__max_num_servos: &max_num_servos 8 #AVL-JC changed from 4 to 8
+__max_num_tilts: &max_num_tilts 8 #AVL-JC changed from 4 to 8
 
 module_name: Control Allocation
 
@@ -347,12 +347,16 @@ parameters:
             description:
                 short: Total number of Tilt Servos
             type: enum
-            values:
+            values: # AVL-JC added the options for 5,6,7,8
                 0: '0'
                 1: '1'
                 2: '2'
                 3: '3'
                 4: '4'
+                5: '5'
+                6: '6'
+                7: '7'
+                8: '8'
             default: 0
         CA_SV_TL${i}_CT:
             description:
