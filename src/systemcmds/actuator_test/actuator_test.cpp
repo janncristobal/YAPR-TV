@@ -43,6 +43,8 @@
 #include <px4_platform_common/module.h>
 #include <uORB/Publication.hpp>
 #include <uORB/topics/actuator_test.h>
+#include <uORB/topics/actuator_motors.h>
+#include <uORB/topics/actuator_servos.h>
 #include <math.h>
 
 extern "C" __EXPORT int actuator_test_main(int argc, char *argv[]);
@@ -184,6 +186,144 @@ int actuator_test_main(int argc, char *argv[])
 				px4_usleep(1000000);
 			}
 			return 0;
+        } else if (strcmp("ramp", argv[myoptind]) == 0) {
+            if (value > 9.f) {
+                usage("Missing argument: value");
+                return 1;
+            }
+
+            if (function == 0) {
+                usage("Missing argument: function");
+                return 1;
+            }
+
+            // Set total duration (ms)
+            int total_ms = timeout_ms > 0 ? timeout_ms : 2000; // default 2s if not set
+            float ramp_ms = total_ms * 0.25f;  // 1/4 for ramp up, 1/4 for ramp down
+            float hold_ms = total_ms * 0.5f;   // 1/2 for hold
+
+            // Calculate steps for ramping (20ms per step)
+            int ramp_steps = static_cast<int>(ramp_ms / 20.0f);
+            if (ramp_steps < 1) ramp_steps = 1;
+            float step = (value - 0.0f) / ramp_steps;
+            float current = 0.0f;
+
+            // Ramp toward target
+            for (int i = 0; i < ramp_steps; ++i) {
+                actuator_test(function, current, 0, false);
+                current += step;
+                px4_usleep(static_cast<useconds_t>(ramp_ms * 1000 / ramp_steps));
+            }
+            // Ensure exact value at peak
+            actuator_test(function, value, 0, false);
+
+            // Hold at target
+            px4_usleep(static_cast<useconds_t>(hold_ms * 1000));
+
+            // Ramp back to zero
+            for (int i = 0; i < ramp_steps; ++i) {
+                current -= step;
+                actuator_test(function, current, 0, false);
+                px4_usleep(static_cast<useconds_t>(ramp_ms * 1000 / ramp_steps));
+            }
+            // Ensure back to neutral
+            actuator_test(function, 0.0f, 0, false);
+            actuator_test(function, NAN, 0, true);
+            return 0;
+		        } else if (strcmp("motor-servo-sync", argv[myoptind]) == 0) {
+            if (value > 9.f) {
+                usage("Missing argument: value");
+                return 1;
+            }
+
+            int motor_function = -1;
+            int servo_function = -1;
+
+            // Parse both -m (motor) and -s (servo)
+            // We'll extract these again from argv to allow both -m and -s to be specified in any order
+            myoptind = 1;
+            myoptarg = nullptr;
+            while ((ch = px4_getopt(argc, argv, "m:s:f:v:t:", &myoptind, &myoptarg)) != EOF) {
+                switch (ch) {
+                case 'm':
+                    motor_function = actuator_test_s::FUNCTION_MOTOR1 + (int)strtol(myoptarg, nullptr, 0) - 1;
+                    break;
+                case 's':
+                    servo_function = actuator_test_s::FUNCTION_SERVO1 + (int)strtol(myoptarg, nullptr, 0) - 1;
+                    break;
+                case 'v':
+                    value = strtof(myoptarg, nullptr);
+                    break;
+                case 't':
+                    timeout_ms = strtof(myoptarg, nullptr) * 1000.f;
+                    break;
+                }
+            }
+
+            // if (motor_function < actuator_test_s::FUNCTION_MOTOR1 || motor_function > actuator_test_s::FUNCTION_MOTOR4) {
+            //     usage("Please specify a motor for this mode (with -m)");
+            //     return 1;
+            // }
+            // if (servo_function < actuator_test_s::FUNCTION_SERVO1 || servo_function > actuator_test_s::FUNCTION_SERVO8) {
+            //     usage("Please specify a servo for this mode (with -s)");
+            //     return 1;
+            // }
+
+            int total_ms = timeout_ms > 0 ? timeout_ms : 2000;
+            float ramp_ms = total_ms * 0.25f;
+            float hold_ms = total_ms * 0.5f;
+            int ramp_steps = static_cast<int>(ramp_ms / 20.0f);
+            if (ramp_steps < 1) ramp_steps = 1;
+            float motor_step = (value - 0.0f) / ramp_steps;
+            float current_motor = 0.0f;
+
+            // Ramp motor up
+            for (int i = 0; i < ramp_steps; ++i) {
+                actuator_test(motor_function, current_motor, 0, false);
+                current_motor += motor_step;
+                px4_usleep(static_cast<useconds_t>(ramp_ms * 1000 / ramp_steps));
+            }
+            actuator_test(motor_function, value, 0, false);
+
+            // Servo oscillation during hold
+            int osc_steps = static_cast<int>(hold_ms / 80.0f); // finer resolution for smooth servo sweep
+            if (osc_steps < 4) osc_steps = 4;
+
+            // Time per step for oscillation
+            float osc_interval_us = (hold_ms * 1000.0f) / osc_steps;
+
+            // Keyframes for servo: 0 → -1 → 1 → 0
+            float servo_positions[] = {0.0f, -1.0f, 1.0f, 0.0f};
+            int keyframes = 4;
+            int steps_per_segment = osc_steps / (keyframes - 1);
+
+            for (int seg = 0; seg < keyframes - 1; ++seg) {
+                float start = servo_positions[seg];
+                float end = servo_positions[seg + 1];
+                float servo_step = (end - start) / steps_per_segment;
+                float current_servo = start;
+
+                for (int i = 0; i < steps_per_segment; ++i) {
+                    actuator_test(motor_function, value, 0, false); // maintain motor at hold value
+                    actuator_test(servo_function, current_servo, 0, false); // move servo
+                    current_servo += servo_step;
+                    px4_usleep(static_cast<useconds_t>(osc_interval_us));
+                }
+            }
+            // Ensure end at 0 for servo
+            actuator_test(servo_function, 0.0f, 0, false);
+
+            // Ramp motor down
+            current_motor = value;
+            for (int i = 0; i < ramp_steps; ++i) {
+                current_motor -= motor_step;
+                actuator_test(motor_function, current_motor, 0, false);
+                px4_usleep(static_cast<useconds_t>(ramp_ms * 1000 / ramp_steps));
+            }
+            actuator_test(motor_function, 0.0f, 0, false);
+            actuator_test(motor_function, NAN, 0, true);
+            actuator_test(servo_function, NAN, 0, true);
+            return 0;
 		}
 	}
 

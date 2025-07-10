@@ -64,6 +64,7 @@ if(CONFIG_MODULES_MC_RATE_CONTROL)
 		### CUSTOM AIRFRAME ###
 		4021_x500_v2_tr
 		4022_x500_v2_tr_nn
+		4023_x500_v2_dat_nn
 		### END CUSTOM AIRFRAME ###
 		4041_beta75x
 		4050_generic_250
