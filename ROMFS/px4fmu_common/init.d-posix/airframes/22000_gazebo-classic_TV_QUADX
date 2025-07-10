@@ -1,0 +1,158 @@
+#!/bin/sh
+#
+# @name Dual Axes Tiltrotor X500 V2
+#
+# @type Tiltrotor Quadrotor x
+# @class Copter
+#
+# @maintainer Ahmad Ziad Zain Aldeen <ahmad.zain@torontomu.ca>
+#
+# @board px4_fmu-v2 exclude
+# @board bitcraze_crazyflie exclude
+#
+
+. ${R}etc/init.d/rc.tm_defaults
+
+param set-default IMU_GYRO_CUTOFF 30
+
+# param set-default MC_ROLLRATE_P 0.14
+# param set-default MC_PITCHRATE_P 0.14
+# param set-default MC_ROLLRATE_I 0.3
+# param set-default MC_PITCHRATE_I 0.3
+# param set-default MC_ROLLRATE_D 0.004
+# param set-default MC_PITCHRATE_D 0.004
+# # YAW PID setup
+
+# param set-default MC_YAWRATE_P 0.0500
+# param set-default MC_YAWRATE_I 0.0000
+# param set-default MC_YAWRATE_D 0.0000
+# param set-default MC_YAWRATE_K 1.0000
+
+param set-default PWM_MAIN_FUNC1 101
+param set-default PWM_MAIN_FUNC2 102
+param set-default PWM_MAIN_FUNC3 103
+param set-default PWM_MAIN_FUNC4 104
+
+# Square quadrotor X PX4 numbering
+param set-default CA_ROTOR_COUNT 4
+
+param set-default  CA_ROTOR0_PX   1.0
+param set-default  CA_ROTOR0_PY   1.0
+param set-default  CA_ROTOR0_PZ   0.0
+param set-default  CA_ROTOR0_AX   0.0
+param set-default  CA_ROTOR0_AY   0.0
+param set-default  CA_ROTOR0_AZ  -1.0
+param set-default  CA_ROTOR0_CT   6.50
+param set-default  CA_ROTOR0_KM   0.05
+
+param set-default  CA_ROTOR1_PX  -1.0
+param set-default  CA_ROTOR1_PY  -1.0
+param set-default  CA_ROTOR1_PZ   0.0
+param set-default  CA_ROTOR1_AX   0.0
+param set-default  CA_ROTOR1_AY   0.0
+param set-default  CA_ROTOR1_AZ  -1.0
+param set-default  CA_ROTOR1_CT   6.50
+param set-default  CA_ROTOR1_KM   0.05
+
+param set-default  CA_ROTOR2_PX   1.0
+param set-default  CA_ROTOR2_PY  -1.0
+param set-default  CA_ROTOR2_PZ   0.0
+param set-default  CA_ROTOR2_AX   0.0
+param set-default  CA_ROTOR2_AY   0.0
+param set-default  CA_ROTOR2_AZ  -1.0
+param set-default  CA_ROTOR2_CT   6.50
+param set-default  CA_ROTOR2_KM  -0.05
+
+param set-default  CA_ROTOR3_PX  -1.0
+param set-default  CA_ROTOR3_PY   1.0
+param set-default  CA_ROTOR3_PZ   0.0
+param set-default  CA_ROTOR3_AX   0.0
+param set-default  CA_ROTOR3_AY   0.0
+param set-default  CA_ROTOR3_AZ  -1.0
+param set-default  CA_ROTOR3_CT   6.50
+param set-default  CA_ROTOR3_KM  -0.05
+
+
+
+########### tiltrotor specific parameters ###########
+
+
+param set-default CA_AIRFRAME 13
+param set-default CA_SV_TL_COUNT 8
+
+param set-default CA_SV_TL0_MAXA  60.0000
+param set-default CA_SV_TL0_MINA -60.0000
+param set-default CA_SV_TL1_MAXA  60.0000
+param set-default CA_SV_TL1_MINA -60.0000
+param set-default CA_SV_TL2_MAXA  60.0000
+param set-default CA_SV_TL2_MINA -60.0000
+param set-default CA_SV_TL3_MAXA  60.0000
+param set-default CA_SV_TL3_MINA -60.0000
+param set-default CA_SV_TL4_MAXA  60.0000
+param set-default CA_SV_TL4_MINA -60.0000
+param set-default CA_SV_TL5_MAXA  60.0000
+param set-default CA_SV_TL5_MINA -60.0000
+param set-default CA_SV_TL6_MAXA  60.0000
+param set-default CA_SV_TL6_MINA -60.0000
+param set-default CA_SV_TL7_MAXA  60.0000
+param set-default CA_SV_TL7_MINA -60.0000
+
+param set-default CA_SV_TL0_MAXM  40.0000
+param set-default CA_SV_TL0_MINM -40.0000
+param set-default CA_SV_TL1_MAXM  40.0000
+param set-default CA_SV_TL1_MINM -40.0000
+param set-default CA_SV_TL2_MAXM  40.0000
+param set-default CA_SV_TL2_MINM -40.0000
+param set-default CA_SV_TL3_MAXM  40.0000
+param set-default CA_SV_TL3_MINM -40.0000
+param set-default CA_SV_TL4_MAXM  40.0000
+param set-default CA_SV_TL4_MINM -40.0000
+param set-default CA_SV_TL5_MAXM  40.0000
+param set-default CA_SV_TL5_MINM -40.0000
+param set-default CA_SV_TL6_MAXM  40.0000
+param set-default CA_SV_TL6_MINM -40.0000
+param set-default CA_SV_TL7_MAXM  40.0000
+param set-default CA_SV_TL7_MINM -40.0000
+
+
+param set-default CA_SV_TL0_TRM 0 
+param set-default CA_SV_TL1_TRM 0
+param set-default CA_SV_TL2_TRM 0
+param set-default CA_SV_TL3_TRM 0
+param set-default CA_SV_TL4_TRM 0 
+param set-default CA_SV_TL5_TRM 0
+param set-default CA_SV_TL6_TRM 0
+param set-default CA_SV_TL7_TRM 0
+
+param set-default PWM_MAIN_FUNC9 201
+param set-default PWM_MAIN_FUNC10 202
+param set-default PWM_MAIN_FUNC11 203
+param set-default PWM_MAIN_FUNC12 204
+param set-default PWM_MAIN_FUNC13 205
+param set-default PWM_MAIN_FUNC14 206
+param set-default PWM_MAIN_FUNC15 207
+param set-default PWM_MAIN_FUNC16 208
+
+param set-default PWM_MAIN_REV 3840
+
+# param set-default PWM_MAIN_REV 8
+# param set-default PWM_MAIN_REV 9
+# param set-default PWM_MAIN_REV 10
+# param set-default PWM_MAIN_REV 11
+
+param set-default PWM_AUX_REV 15
+
+param set-default CA_TM_CUTOFF 0.125
+param set-default CA_TM_RU     1
+param set-default CA_TM_AXIS 0 # 0 for DUAL , 1 for SINGLE-LATERAL and 2 for SINGLE-BILATERAL
+
+
+param set-default POS_NO_TILT 1
+
+
+
+# radio setup
+param set-default COM_FLTMODE1 8
+param set-default COM_FLTMODE4 6
+param set-default COM_FLTMODE6 2
+param set-default MAN_ARM_GESTURE 0

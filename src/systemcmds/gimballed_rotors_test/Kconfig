@@ -1,0 +1,5 @@
+menuconfig SYSTEMCMDS_GIMBALLED_ROTORS_TEST
+	bool "gimballed_rotors_test"
+	default n
+	---help---
+		Enable support for gimballed_rotors_test
